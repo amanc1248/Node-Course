@@ -1,17 +1,18 @@
 const fs = require("fs");
+const chalk = require("chalk");
 //1) for adding data
-const addNotes = function (title, body) {
+const addNotes = (title, body) => {
   const notes = loadNotes();
-  const duplicateNote = notes.filter(function (note) {
-    return note.title == title;
-  });
-  console.log(
-    "this is the duplicate note " +
-      duplicateNote +
-      " with length: " +
-      duplicateNote.length
-  );
-  if (duplicateNote.length == 0) {
+  const duplicateNote = notes.find((note) => note.title == title);
+
+  //here we are trying to debug  our node application and inorder to see the debugged thing, 
+  //we need to run node by adding inspect
+  debugger
+
+  console.log(duplicateNote);
+  //add value to the json file when there is nothing inside the duplicateNote
+  if (!duplicateNote) {
+    //this is to add the title and the body into the json file
     notes.push({
       title: title,
       body: body,
@@ -22,7 +23,7 @@ const addNotes = function (title, body) {
   }
 };
 //2) for loading Notes
-const loadNotes = function () {
+const loadNotes = () => {
   try {
     const dataBuffer = fs.readFileSync("notes.json");
     const jsonDATA = dataBuffer.toString();
@@ -32,29 +33,46 @@ const loadNotes = function () {
   }
 };
 //3) saving the data
-const saveData = function (notes) {
+const saveData = (notes) => {
   const dataJSON = JSON.stringify(notes);
   fs.writeFileSync("notes.json", dataJSON);
 };
 //4) removing the note
-const removeNote = function (title) {
+const removeNote = (title) => {
   const notes = loadNotes();
-  const notesToKeep = notes.filter(function (note) {
-    return note.title !== title;
-  });
-  console.log(notesToKeep.length +" and its object is "+notesToKeep);
-  saveData(notesToKeep);
 
-  // if (duplicateNote.length == 0) {
-  //   console.log("Note with title: " + title + " cannot be found");
-  // } else {
-  //   notes.pop({
-  //     title: title,
-  //   });
-  //   console.log(title + " removed");
-  // }
+  const notesToKeep = notes.filter((note) => note.title !== title);
+
+  if (notesToKeep.length < loadNotes().length) {
+    console.log(chalk.green("Note removed"));
+    saveData(notesToKeep);
+  } else {
+    console.log(chalk.red("Note not removed"));
+  }
+  console.log(notesToKeep.length + " and its object is " + notesToKeep);
+};
+//5) for listing notes
+const listNotes = () => {
+  const notes = loadNotes();
+  console.log(chalk.green.inverse("Your notes"));
+  notes.forEach((element) => console.log(element.title));
+};
+//6 for reading notes
+const readNotes = (title) => {
+  const notes = loadNotes();
+  const searchedNote = notes.find((note) => note.title === title);
+  if (searchedNote) {
+  console.log(chalk.yellow.inverse(searchedNote.title) +" "+ searchedNote.body);
+    
+  } else {
+    console.log(
+      chalk.red.inverse("Could not find the list")
+    );
+  }
 };
 module.exports = {
   addingNotes: addNotes,
   removingNote: removeNote,
+  listingNote: listNotes,
+  readingNote:readNotes
 };
